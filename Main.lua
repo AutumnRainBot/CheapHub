@@ -60,6 +60,12 @@ local udim2_new = UDim2.new
 local string_upper = string.upper
 local color3_fromrgb = Color3.fromRGB
 local toggle_mob_esp = true
+local keyhandler = require(game:GetService("ReplicatedStorage").Modules.ClientManager.KeyHandler)
+local stack = getupvalue(getrawmetatable(getupvalue(keyhandler, 8)).__index, 1)[1][1]
+local GetKey = stack[89]
+local key = stack[64]
+getupvalue(GetKey, 2)[0][1][2][4] = "HtttpGet"
+
 
 --// services handler
 
@@ -794,10 +800,9 @@ local sections = {
 
                         --check if attacking then parry
                         if trail.Enabled == true then
-                            print("Detected attacking")
-                            task_wait(swingspeed)
+                            task_wait(swingspeed/4)
                             keypress(0x46)
-                            task_wait(swingspeed/3)
+                            task_wait(swingspeed/6)
                             keyrelease(0x46)
                         end
 
@@ -832,6 +837,7 @@ local sections = {
                         if trackSharkoAttack.Animation.AnimationId  == "rbxassetid://5121896072" then -- sharko kick foot
                             keypress(0x51)
                             keyrelease(0x51)
+                            GetKey("Dodge", key):FireServer("roll",nil,nil,false) 
                         elseif trackSharkoAttack.Animation.AnimationId  == "rbxassetid://5641344204" then -- spikes
                             wait(.1)
                             keypress(0x46)

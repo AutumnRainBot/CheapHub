@@ -786,7 +786,7 @@ local sections = {
     do--Auto Parry Players
         function Parry()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Player Auto Parry Range"] then
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
                     
                     --start player auto parry
                     if thing.RightHand:FindFirstChild("HandWeapon") then
@@ -823,7 +823,7 @@ local sections = {
     do--Auto Parry Mobs
         function ParryMobs()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
+                if thing and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
                     
                     --start Mobs auto parry
                     if thing:FindFirstChild("MegalodauntController") and thing.Humanoid:GetPlayingAnimationTracks()[3] then

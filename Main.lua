@@ -1,9 +1,6 @@
 --// wait until game loaded
 
-
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
+repeat wait() until game:IsLoaded()
 
 --// localizations 
 
@@ -142,21 +139,16 @@ local window = library:Window({Name = "CheapHub"})
 local tabs = {
     movement = window:Tab({Name = "Movement"}),
     character = window:Tab({Name = "Local"}),
-    prevention = window:Tab({Name = "Prevention"}),
     misc = window:Tab({Name = "Misc"}),
     player_visuals = window:Tab({Name = "Player Visuals"}),
     game_visuals = window:Tab({Name = "Game Visuals"}),
-    world = window:Tab({Name = "World"}),
-    automation = window:Tab({Name = "Automation"}),
-    bots = window:Tab({Name = "Bots"}),
-    safety = window:Tab({Name = "Safety"}),
+    combat = window:Tab({Name = "Combat"}),
 }
 
 local sections = {
     movement_settings = tabs.movement:Section({Name = "Settings"}),
     local_misc = tabs.character:Section({Name = "Misc"}),
 
-    prevention_settings = tabs.prevention:Section({Name = "Settings"}),
 
     game_visuals_misc = tabs.game_visuals:Section({Name = "Mobs"}),
     game_visuals_trinket = tabs.game_visuals:Section({Name = "Chest"}),
@@ -167,11 +159,7 @@ local sections = {
     player_visuals_visual = tabs.player_visuals:Section({Name = "Visual"}),
     player_visuals_emotes = tabs.player_visuals:Section({Name = "Emotes"}),
     
-    automation_settings = tabs.automation:Section({Name = "Settings"}),
-
-    bots_settings = tabs.bots:Section({Name = "Settings"}),
-
-    safety_protection = tabs.safety:Section({Name = "Protection"}),
+    combat_settings = tabs.combat:Section({Name = "Combat / AutoParry"}),
 
 }
 
@@ -382,7 +370,7 @@ local sections = {
                     if drop and drop:FindFirstChild("HumanoidRootPart")then
                         --get drop on screen with 3d position
                         local dropvector, onscreen = camera:WorldToViewportPoint(drop.HumanoidRootPart.Position+Vector3.new(0,4.5,0))
-                        local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - drop:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                        local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - drop:FindFirstChild("HumanoidRootPart").Position).Magnitude
                         if library.flags["Mob ESP"] then
                             if onscreen then
                                 if dist<=library.flags["ESP Range"] then
@@ -453,7 +441,7 @@ local sections = {
             if chest and chest.Transparency == 0 then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(chest.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - chest.Position).Magnitude
+                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - chest.Position).Magnitude
                 if library.flags["Chest Esp"] then
                     if onscreen then
                         if dist <= library.flags["Chest Range"] then
@@ -525,7 +513,7 @@ local sections = {
             if Area then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(Area.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - Area.Position).Magnitude
+                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - Area.Position).Magnitude
                 if library.flags["Area Esp"] then
                     if onscreen then
                             DropLine.Color = DropText.Color
@@ -593,7 +581,7 @@ local sections = {
             if bag and bag.Transparency == 0 and  game:GetService("Workspace").Thrown:FindFirstChild(bag) then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(bag.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - bag.Position).Magnitude
+                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - bag.Position).Magnitude
                 if library.flags["Bag Esp"] then
                     if onscreen then
                         if dist<= library.flags["Bag Range"] then
@@ -665,7 +653,7 @@ local sections = {
             if plr and plr:FindFirstChild("HumanoidRootPart")  and plr:FindFirstChild("HumanoidRootPart").CFrame and plr:FindFirstChild("HumanoidRootPart").Position and game.Players:FindFirstChild(plr.Name) then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(plr:FindFirstChild("HumanoidRootPart").Position+Vector3.new(0,3.45,0))
-                local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - plr:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - plr:FindFirstChild("HumanoidRootPart").Position).Magnitude
 
                 if library.flags["Player Esp"] and plr and plr:FindFirstChild("HumanoidRootPart") and plr.Name ~=game.Players.LocalPlayer.Name then
                     if onscreen then
@@ -793,4 +781,82 @@ local sections = {
                 track:Play()
             end})
         end
+    end
+
+    do--Auto Parry Players
+        function Parry()
+            for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Player Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
+                    
+                    --start player auto parry
+                    if thing:FindFirstChild("Water") and thing.RightHand:FindFirstChild("HandWeapon") then
+                        local swingspeed = thing.RightHand.HandWeapon.Stats.SwingSpeed.Value
+                        local trail = thing.RightHand.HandWeapon.WeaponTrail
+                        local times = swingspeed
+
+                        --check if attacking then parry
+                        if thing.RightHand:FindFirstChild("HandWeapon") and trail.Enabled then
+                            task_wait(times)
+                            keypress(0x46)
+                            keyrelease(0x46)
+                        end
+
+                    end
+                    --end for player auto parry
+
+                    --toggle function
+                    task_spawn(function()
+                        while task_wait() do
+                            if library.flags["Player Auto Parry"] then
+                                Parry()
+                            end
+                        end
+                    end)
+
+                end
+            end
+        end
+
+        sections.combat_settings:Slider({Name = "Player Auto Parry Range", Min = 1, Max = 100})
+        sections.combat_settings:Toggle({Name = "Player Auto Parry"})
+    end
+
+    do--Auto Parry Mobs
+        function ParryMobs()
+            for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
+                    
+                    --start Mobs auto parry
+                    if thing:FindFirstChild("MegalodauntController") and thing.Humanoid:GetPlayingAnimationTracks()[3] then
+                        local trackSharkoAttack = thing.Humanoid:GetPlayingAnimationTracks()[3]
+        
+                        if track.Animation.AnimationId  == "rbxassetid://5121896072" then -- sharko kick foot
+                            keypress(0x51)
+                            keyrelease(0x51)
+                        elseif track.Animation.AnimationId  == "rbxassetid://5641344204" then -- spikes
+                            keypress(0x46)
+                            task_wait(.2)
+                            keyrelease(0x46)
+                        end
+                 
+
+                    end
+
+                    --end for mobs auto parry
+
+                    --toggle function
+                    task_spawn(function()
+                        while task_wait() do
+                            if library.flags["Mobs Auto Parry"] then
+                                ParryMobs()
+                            end
+                        end
+                    end)
+
+                end
+            end
+        end
+
+        sections.combat_settings:Slider({Name = "Mobs Auto Parry Range", Min = 1, Max = 200})
+        sections.combat_settings:Toggle({Name = "Mobs Auto Parry"})
     end

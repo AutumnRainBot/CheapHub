@@ -801,11 +801,11 @@ local sections = {
 
                         --check if attacking then parry
                         if trail.Enabled == true and not blocking then
-                            task_wait(swingspeed/4)
+                            task_wait(swingspeed/3.5)
                             keypress(0x46)
                             blocking = true
-                            wait(swingspeed/8)
                             keyrelease(0x46)
+                            task_wait(.34)
                             blocking = false
                         end
 
@@ -867,4 +867,4 @@ local sections = {
 
         sections.combat_settings:Slider({Name = "Mobs Auto Parry Range", Min = 1, Max = 200})
         sections.combat_settings:Toggle({Name = "Mobs Auto Parry"})
-    end           
+    end

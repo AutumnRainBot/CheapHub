@@ -786,36 +786,35 @@ local sections = {
     do--Auto Parry Players
         function Parry()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Player Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Player Auto Parry Range"] then
                     
                     --start player auto parry
-                    if thing:FindFirstChild("Water") and thing.RightHand:FindFirstChild("HandWeapon") then
+                    if thing.RightHand:FindFirstChild("HandWeapon") then
                         local swingspeed = thing.RightHand.HandWeapon.Stats.SwingSpeed.Value
                         local trail = thing.RightHand.HandWeapon.WeaponTrail
                         local times = swingspeed
 
                         --check if attacking then parry
-                        if thing.RightHand:FindFirstChild("HandWeapon") and trail.Enabled then
-                            task_wait(times)
+                        trail:GetPropertyChangedSignal("Enabled"):Connect(function()
+                            wait(.2)
                             keypress(0x46)
                             keyrelease(0x46)
-                        end
+                        end)
 
                     end
-                    --end for player auto parry
-
-                    --toggle function
-                    task_spawn(function()
-                        while task_wait() do
-                            if library.flags["Player Auto Parry"] then
-                                Parry()
-                            end
-                        end
-                    end)
 
                 end
             end
         end
+
+        --toggle function
+        task_spawn(function()
+            while task_wait() do
+                if library.flags["Player Auto Parry"] then
+                    Parry()
+                end
+            end
+        end)
 
         sections.combat_settings:Slider({Name = "Player Auto Parry Range", Min = 1, Max = 100})
         sections.combat_settings:Toggle({Name = "Player Auto Parry"})
@@ -824,7 +823,7 @@ local sections = {
     do--Auto Parry Mobs
         function ParryMobs()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
+                if thing and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
                     
                     --start Mobs auto parry
                     if thing:FindFirstChild("MegalodauntController") and thing.Humanoid:GetPlayingAnimationTracks()[3] then
@@ -834,8 +833,9 @@ local sections = {
                             keypress(0x51)
                             keyrelease(0x51)
                         elseif track.Animation.AnimationId  == "rbxassetid://5641344204" then -- spikes
+                            wait(.1)
                             keypress(0x46)
-                            task_wait(.2)
+                            wait(.2)
                             keyrelease(0x46)
                         end
                  
@@ -844,18 +844,17 @@ local sections = {
 
                     --end for mobs auto parry
 
-                    --toggle function
-                    task_spawn(function()
-                        while task_wait() do
-                            if library.flags["Mobs Auto Parry"] then
-                                ParryMobs()
-                            end
-                        end
-                    end)
-
                 end
             end
         end
+
+        task_spawn(function()
+            while wait() do
+                if library.flags["Mobs Auto Parry"] then
+                    ParryMobs()
+                end
+            end
+        end)
 
         sections.combat_settings:Slider({Name = "Mobs Auto Parry Range", Min = 1, Max = 200})
         sections.combat_settings:Toggle({Name = "Mobs Auto Parry"})

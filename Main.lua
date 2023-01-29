@@ -805,7 +805,7 @@ local sections = {
                             keypress(0x46)
                             blocking = true
                             keyrelease(0x46)
-                            task_wait(.34)
+                            repeat task_wait() until not trail.Enabled or thing == nil or not thing.RightHand:FindFirstChild("HandWeapon") 
                             blocking = false
                         end
 

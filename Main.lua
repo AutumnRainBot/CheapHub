@@ -790,6 +790,7 @@ local sections = {
     end
 
     do--Auto Parry Players
+        local blocking = false
         function Parry()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
                 if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("Water") and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
@@ -799,11 +800,13 @@ local sections = {
                         local trail = thing.RightHand.HandWeapon.WeaponTrail
 
                         --check if attacking then parry
-                        if trail.Enabled == true then
+                        if trail.Enabled == true and not blocking then
                             task_wait(swingspeed/4)
                             keypress(0x46)
-                            task_wait(swingspeed/6)
+                            blocking = true
+                            wait(swingspeed/8)
                             keyrelease(0x46)
+                            blocking = false
                         end
 
                     end
@@ -864,4 +867,4 @@ local sections = {
 
         sections.combat_settings:Slider({Name = "Mobs Auto Parry Range", Min = 1, Max = 200})
         sections.combat_settings:Toggle({Name = "Mobs Auto Parry"})
-    end
+    end           

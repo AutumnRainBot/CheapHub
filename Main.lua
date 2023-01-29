@@ -19,6 +19,7 @@ local sethiddenproperty = sethiddenproperty
 local gethiddenproperty = gethiddenproperty
 local firesignal = firesignal
 
+
 local request = request or syn and syn.request
 local protect_gui = syn and function(gui) syn.protect_gui(gui) gui.Parent = game:GetService("CoreGui") end or gethui and function(gui) gui.Parent = gethui() end
 
@@ -65,8 +66,12 @@ local stack = getupvalue(getrawmetatable(getupvalue(keyhandler, 8)).__index, 1)[
 local GetKey = stack[89]
 local key = stack[64]
 getupvalue(GetKey, 2)[0][1][2][4] = "HtttpGet"
+local ScriptContext = game:GetService("ScriptContext")
+local hook = hookfunction or detour_function
 
-
+for i,v in next, getconnections(ScriptContext.Error) do
+    v:Disable()
+end
 --// services handler
 
 local service_cache = {}
@@ -82,6 +87,7 @@ local services = setmetatable({}, {
         return cached_service
     end
 })
+
 
 
 --// init variables
@@ -155,6 +161,7 @@ local sections = {
     movement_settings = tabs.movement:Section({Name = "Settings"}),
     local_misc = tabs.misc:Section({Name = "Misc"}),
 
+    game_visuals_local = tabs.character:Section({Name = "No Fog / Full Bright"}),
 
     game_visuals_misc = tabs.game_visuals:Section({Name = "Mobs"}),
     game_visuals_trinket = tabs.game_visuals:Section({Name = "Chest"}),
@@ -724,6 +731,53 @@ local sections = {
         sections.player_visuals_visual:Toggle({Name = "Full bright and no fog"})
     end
 
+
+    do--No fog
+        
+        game:GetService("Lighting"):GetPropertyChangedSignal("Ambient"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").Ambient = color3_fromrgb(255, 255, 255)
+            end
+        end)
+        game:GetService("Lighting").GenericBlur:GetPropertyChangedSignal("Enabled"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").GenericBlur.Enabled = false
+            end
+        end)
+        game:GetService("Lighting").DistortionBlur:GetPropertyChangedSignal("Enabled"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").DistortionBlur.Enabled = false
+            end
+        end)
+        game:GetService("Lighting").UnderwaterBlur:GetPropertyChangedSignal("Enabled"):Connect(function()
+            if library.flags["No Blur"]then
+                game:GetService("Lighting").UnderwaterBlur.Enabled = false
+            end
+        end)
+        game:GetService("Lighting"):GetPropertyChangedSignal("FogEnd"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").FogEnd = 1000000
+            end
+        end)
+
+        game:GetService("Lighting"):GetPropertyChangedSignal("FogStart"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").FogStart = 1000000
+            end
+        end)
+
+        game:GetService("Lighting").Atmosphere:GetPropertyChangedSignal("Density"):Connect(function()
+            if library.flags["No Blur"] then
+                game:GetService("Lighting").Atmosphere.Density = 0
+            end
+        end)
+
+        sections.game_visuals_local:Toggle({Name = "No Blur"})
+        sections.game_visuals_local:Toggle({Name = "Full Bright"})
+    end
+
+
+
     do--player too close Alert
 
         function DetectPlayer(plr)
@@ -790,27 +844,21 @@ local sections = {
     end
 
     do--Auto Parry Players
-        local blocking = false
         function Parry()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("Water") and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name  and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
                     --start player auto parry
                     if thing.RightHand:FindFirstChild("HandWeapon") then
                         local swingspeed = thing.RightHand.HandWeapon.Stats.SwingSpeed.Value
-                        local trail = thing.RightHand.HandWeapon.WeaponTrail
-
+                        local trail = thing.RightHand.HandWeapon:FindFirstChild("WeaponTrail")
                         --check if attacking then parry
-                        if trail.Enabled == true and not blocking then
-                            task_wait(swingspeed/3.5)
+                        if trail.Enabled == true then
+                            task_wait(swingspeed/5)
                             keypress(0x46)
-                            blocking = true
                             keyrelease(0x46)
-                            repeat task_wait() until not trail.Enabled or thing == nil or not thing.RightHand:FindFirstChild("HandWeapon") 
-                            blocking = false
+                            repeat task_wait() until not trail.Enabled or thing == nil or not thing.RightHand:FindFirstChild("HandWeapon")
                         end
-
                     end
-
                 end
             end
         end
@@ -867,4 +915,23 @@ local sections = {
 
         sections.combat_settings:Slider({Name = "Mobs Auto Parry Range", Min = 1, Max = 200})
         sections.combat_settings:Toggle({Name = "Mobs Auto Parry"})
+    end
+
+
+    do--no fall damage
+        local old
+        old = hook(Instance.new("RemoteEvent").FireServer, function(self,...)
+            local args = {...}
+            
+            if Player.Character ~= nil and self.Parent == game:GetService("ReplicatedStorage").Requests then
+                if type(arg[1]) == "number" and arg[1] > 10 and type(arg[2]) == "boolean" and arg[2] == false and #args == 2 then
+                    return nil
+                end
+            end
+
+            return old(self,...)
+        end)
+
+
+        sections.game_visuals_local:Toggle({Name = "No Fall"})
     end

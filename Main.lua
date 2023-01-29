@@ -147,7 +147,7 @@ local tabs = {
 
 local sections = {
     movement_settings = tabs.movement:Section({Name = "Settings"}),
-    local_misc = tabs.character:Section({Name = "Misc"}),
+    local_misc = tabs.misc:Section({Name = "Misc"}),
 
 
     game_visuals_misc = tabs.game_visuals:Section({Name = "Mobs"}),
@@ -725,7 +725,7 @@ local sections = {
                 local c
                 c = game:GetService("RunService").RenderStepped:Connect(function()
                     if plr and plr:FindFirstChild("HumanoidRootPart")  and plr:FindFirstChild("HumanoidRootPart").CFrame and plr:FindFirstChild("HumanoidRootPart").Position and game.Players:FindFirstChild(plr.Name) then
-                        local dist = (player.Character:FindFirstChild("HumanoidRootPart").Position - plr:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                        local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - plr:WaitForChild("HumanoidRootPart").Position).Magnitude
                         if library.flags["Player Alert"] and plr and plr:FindFirstChild("HumanoidRootPart") and plr.Name ~=game.Players.LocalPlayer.Name then
                             if dist<=library.flags["Player Alert Range"] then
                                 --game.StarterGui:SetCore("SendNotification", {Title = "PLAYER NEARBY";Text = plr.Name;Duration = 3;})
@@ -786,20 +786,20 @@ local sections = {
     do--Auto Parry Players
         function Parry()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
-                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
-                    
+                if thing and thing.Name ~= game.Players.LocalPlayer.Name and thing:FindFirstChild("Water") and thing:FindFirstChild("HumanoidRootPart") and thing:FindFirstChild("Humanoid")  and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Player Auto Parry Range"] then
                     --start player auto parry
                     if thing.RightHand:FindFirstChild("HandWeapon") then
                         local swingspeed = thing.RightHand.HandWeapon.Stats.SwingSpeed.Value
                         local trail = thing.RightHand.HandWeapon.WeaponTrail
-                        local times = swingspeed
 
                         --check if attacking then parry
-                        trail:GetPropertyChangedSignal("Enabled"):Connect(function()
-                            wait(.2)
+                        if trail.Enabled == true then
+                            print("Detected attacking")
+                            task_wait(swingspeed)
                             keypress(0x46)
+                            task_wait(swingspeed/3)
                             keyrelease(0x46)
-                        end)
+                        end
 
                     end
 
@@ -829,10 +829,10 @@ local sections = {
                     if thing:FindFirstChild("MegalodauntController") and thing.Humanoid:GetPlayingAnimationTracks()[3] then
                         local trackSharkoAttack = thing.Humanoid:GetPlayingAnimationTracks()[3]
         
-                        if track.Animation.AnimationId  == "rbxassetid://5121896072" then -- sharko kick foot
+                        if trackSharkoAttack.Animation.AnimationId  == "rbxassetid://5121896072" then -- sharko kick foot
                             keypress(0x51)
                             keyrelease(0x51)
-                        elseif track.Animation.AnimationId  == "rbxassetid://5641344204" then -- spikes
+                        elseif trackSharkoAttack.Animation.AnimationId  == "rbxassetid://5641344204" then -- spikes
                             wait(.1)
                             keypress(0x46)
                             wait(.2)

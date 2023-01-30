@@ -853,10 +853,12 @@ local sections = {
                         local trail = thing.RightHand.HandWeapon:FindFirstChild("WeaponTrail")
                         --check if attacking then parry
                         if trail.Enabled == true then
-                            task_wait(swingspeed/5)
+                            task_wait(swingspeed/4.5)
+                            print("parry now")
                             keypress(0x46)
                             keyrelease(0x46)
-                            repeat task_wait() until not trail.Enabled or thing == nil or not thing.RightHand:FindFirstChild("HandWeapon")
+                            print("release now")
+                            repeat task_wait() until not trail.Enabled or thing == nil
                         end
                     end
                 end
@@ -880,7 +882,7 @@ local sections = {
         function ParryMobs()
             for i, thing in pairs(game:GetService("Workspace").Live:GetChildren()) do
                 if thing and thing:FindFirstChild("HumanoidRootPart") and (game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart").Position - thing.HumanoidRootPart.Position).Magnitude <= library.flags["Mobs Auto Parry Range"] and thing:FindFirstChild("Humanoid") then
-                    
+            
                     --start Mobs auto parry
                     if thing:FindFirstChild("MegalodauntController") and thing.Humanoid:GetPlayingAnimationTracks()[3] then
                         local trackSharkoAttack = thing.Humanoid:GetPlayingAnimationTracks()[3]
@@ -923,8 +925,9 @@ local sections = {
         old = hook(Instance.new("RemoteEvent").FireServer, function(self,...)
             local args = {...}
             
-            if Player.Character ~= nil and self.Parent == game:GetService("ReplicatedStorage").Requests then
+            if library.flags["No Fall"] and self.Parent == game:GetService("ReplicatedStorage").Requests then
                 if type(arg[1]) == "number" and arg[1] > 10 and type(arg[2]) == "boolean" and arg[2] == false and #args == 2 then
+                    wait(9e9)
                     return nil
                 end
             end

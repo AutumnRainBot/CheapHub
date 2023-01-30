@@ -80,7 +80,7 @@ function library:Window(options)
 	MainUIFrame.BackgroundTransparency = 1.000
 	MainUIFrame.Position = UDim2.new(0.252025217, 0, 0.226720661, 0)
 	MainUIFrame.Size = UDim2.new(0, 551, 0, 480)
-	MainUIFrame.Image = "rbxassetid://10039620141"
+	MainUIFrame.Image = "rbxassetid://3570695787"
 	MainUIFrame.ImageColor3 = Color3.fromRGB(22, 22, 22)
 	MainUIFrame.ScaleType = Enum.ScaleType.Slice
 	MainUIFrame.SliceCenter = Rect.new(100, 100, 100, 100)
@@ -1595,7 +1595,7 @@ function library:Window(options)
 				Hue.SliceCenter = Rect.new(128, 128, 128, 128)
 				Hue.SliceScale = 0.02
 
-				UIGradient_3.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)), ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)), ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 255, 255)), ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))}
+				UIGradient_3.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)), ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)), ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)), ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))}
 				UIGradient_3.Rotation = 90
 				UIGradient_3.Parent = Hue
 

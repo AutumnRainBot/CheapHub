@@ -938,3 +938,156 @@ local sections = {
 
         sections.game_visuals_local:Toggle({Name = "No Fall"})
     end
+
+
+    do -- chat logs
+        local chat_logger = instance_new("ScreenGui")
+
+        protect_gui(chat_logger)
+
+        local rounded_frame = instance_new("Frame")
+
+        rounded_frame.Parent = chat_logger
+        rounded_frame.BackgroundColor3 = color3_fromrgb(22, 22, 22)
+        rounded_frame.Position = udim2_new(0.112, 0, 0.375, 0)
+        rounded_frame.Size = udim2_new(0, 350, 0, 200)
+        rounded_frame.Visible = false
+        rounded_frame.Draggable = true
+
+        local scrolling_frame = instance_new("ScrollingFrame")
+
+        scrolling_frame.Parent = rounded_frame
+        scrolling_frame.Active = true
+        scrolling_frame.AnchorPoint = vector2_new(0.5, 0)
+        scrolling_frame.BackgroundColor3 = color3_fromrgb(255, 255, 255)
+        scrolling_frame.BackgroundTransparency = 1
+        scrolling_frame.BorderSizePixel = 0
+        scrolling_frame.Position = udim2_new(0.515, 0, 0.085, 10)
+        scrolling_frame.Size = udim2_new(0, 325, 0, 165)
+        scrolling_frame.CanvasSize = udim2_new(0, 0, 0, 0)
+        scrolling_frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        scrolling_frame.ScrollBarThickness = 0
+
+        local chat_list_layout = instance_new("UIListLayout")
+
+        chat_list_layout.Parent = scrolling_frame
+        chat_list_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        chat_list_layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local chat_label = instance_new("TextLabel")
+        
+        chat_label.Parent = rounded_frame
+        chat_label.AnchorPoint = vector2_new(0.5, 0)
+        chat_label.BackgroundColor3 = color3_fromrgb(255, 255, 255)
+        chat_label.BackgroundTransparency = 1
+        chat_label.Position = udim2_new(0.5, 0, 0, 0)
+        chat_label.Size = udim2_new(0, 0, 0, 25)
+        chat_label.Font = Enum.Font.SourceSans
+        chat_label.Text = "Chatlogger"
+        chat_label.TextColor3 = color3_fromrgb(255, 255, 255)
+        chat_label.TextSize = 20
+        chat_label.TextYAlignment = Enum.TextYAlignment.Bottom
+
+        local current_drag
+        local drag_input
+        local drag_start
+        local start_pos
+        
+        rounded_frame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                drag_start = input.Position
+                start_pos = rounded_frame.Position
+                current_drag = true
+                
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then
+                        current_drag = false
+                    end
+                end)
+            end
+        end)
+        
+        rounded_frame.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                drag_input = input
+            end
+        end)
+        
+        services.UserInputService.InputChanged:Connect(function(input)
+            if input == drag_input and current_drag then
+                local Delta = input.Position - drag_start
+                rounded_frame.Position = udim2_new(start_pos.X.Scale, start_pos.X.Offset + Delta.X, start_pos.Y.Scale, start_pos.Y.Offset + Delta.Y)
+            end
+        end)
+
+        local function log_chat(target_player, text)
+            if library.flags["Streamer Mode"] and target_player == player then
+                return
+            end
+
+            local new_text = instance_new("TextButton")
+            new_text.Parent = scrolling_frame
+            new_text.BackgroundColor3 = color3_fromrgb(255, 255, 255)
+            new_text.BackgroundTransparency = 1
+            new_text.Size = udim2_new(1, 0, 0, 25)
+            new_text.AutoButtonColor = false
+            new_text.Font = Enum.Font.SourceSans
+            new_text.TextColor3 = color3_fromrgb(255, 255, 255)
+            new_text.Text = ("%s: %s"):format(target_player.Name, text)
+            local old_text = ("%s: %s"):format(target_player.Name, text)
+
+            local target_character = target_player.Character
+            if target_character then
+                if target_player.Backpack:FindFirstChild("Observe") or target_character:FindFirstChild("Observe") then
+                    new_text.TextColor3 = color3_fromrgb(90, 149, 200)
+                end
+                local fake_humanoid = target_character:FindFirstChild("FakeHumanoid", true)
+                if fake_humanoid then
+                    local rogue_name_part = fake_humanoid.Parent
+                    new_text.Text = ("%s: %s"):format(rogue_name_part.Name, text)
+                    old_text = ("%s: %s"):format(rogue_name_part.Name, text)
+                end
+            end
+            
+            new_text.TextSize = 16
+            new_text.TextXAlignment = Enum.TextXAlignment.Left
+
+            new_text.MouseButton1Click:Connect(function()
+                if target_player and target_player.Character and target_player.Character:FindFirstChild("Humanoid") then
+                    camera.CameraSubject = target_player.Character.Humanoid
+                end
+            end)
+
+            new_text.MouseEnter:Connect(function()
+                new_text.Text = ("%s: %s"):format(target_player.Name, text)
+            end)
+
+            new_text.MouseLeave:Connect(function()
+                new_text.Text = old_text
+            end)
+            
+            scrolling_frame.CanvasPosition = vector2_new(0, 10000)
+        end
+
+        local players_list = services.Players:GetPlayers()
+
+        for index = 1, #players_list do
+            local target_player = players_list[index]
+            
+            target_player.Chatted:connect(function(message)
+                log_chat(target_player, message)
+            end)
+        end
+        
+        services.Players.PlayerAdded:Connect(function(target_player)
+            target_player.Chatted:connect(function(message)
+                log_chat(target_player, message)
+            end)
+        end)
+
+        sections.local_misc:Toggle({Name = "Chatlogger", Callback = function(state)
+            rounded_frame.Visible = state
+        end})
+
+        
+    end

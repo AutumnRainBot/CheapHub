@@ -68,7 +68,9 @@ local key = stack[64]
 getupvalue(GetKey, 2)[0][1][2][4] = "HtttpGet"
 local ScriptContext = game:GetService("ScriptContext")
 local hook = hookfunction or detour_function
-
+local lplayer = game.Players.LocalPlayer
+local character = lplayer.Character
+local hum = nil
 for i,v in next, getconnections(ScriptContext.Error) do
     v:Disable()
 end
@@ -182,18 +184,30 @@ local sections = {
     do
         local local_movement, local_misc = sections.movement_settings, sections.local_misc
 
+        function CharacterStartup(char)
+            hum = char:WaitForChild("Humanoid")
+        end
+        player.CharacterAdded:Connect(function(c)
+            character = c
+            CharacterStartup(character)
+        end)
+        
+        if character then
+            CharacterStartup(character)
+        end
+
         do -- walk speed / jump height
             
             task_spawn(function()
                 while task_wait() do
                     if library.flags["Walk Speed"] then 
-                        if game.Players.LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                            game.Players.LocalPlayer.Character:TranslateBy(game.Players.LocalPlayer.Character.Humanoid.MoveDirection * library.flags["Walk Speed Boost"]/50)
+                        if character.Humanoid.MoveDirection.Magnitude > 0 then
+                            character:TranslateBy(character.Humanoid.MoveDirection * library.flags["Walk Speed Boost"]/50)
                         end
                     end
                     if library.flags["Jump Height"] then 
-                        if game.Players.LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                            game.Players.LocalPlayer.Character:TranslateBy(game.Players.LocalPlayer.Character.Humanoid.MoveDirection * library.flags["Jump Height Value"]/50)
+                        if character.Humanoid.MoveDirection.Magnitude > 0 then
+                            character:TranslateBy(character.Humanoid.MoveDirection * library.flags["Jump Height Value"]/50)
                         end
                     end
                 end
@@ -208,10 +222,10 @@ local sections = {
         do -- infinite jump
             services.UserInputService.JumpRequest:Connect(function()
                 if library.flags["Infinite Jump"] then
-                    local character = player.Character
+                    local character = character
 
                     if character then 
-                        local humanoid = player.Character:FindFirstChild("Humanoid")
+                        local humanoid = character:FindFirstChild("Humanoid")
 
                         if humanoid then
                             humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -234,7 +248,7 @@ local sections = {
 
             services.RunService.Stepped:Connect(function()
                 if library.flags.NoClip then
-                    local character = player.Character
+                    local character = character
 
                     if character then
                         local humanoid, humanoid_root_part = character:FindFirstChildOfClass("Humanoid"), character:FindFirstChild("HumanoidRootPart")
@@ -371,10 +385,6 @@ local sections = {
             DropText.OutlineColor = Color3.fromRGB(0, 0, 0);
             DropText.Color = Color3.fromRGB(255, 255, 255);
             
-            local DropLine = Drawing.new("Line")
-            DropLine.Visible = false
-            DropLine.Thickness = 1
-            DropLine.Transparency = 0.5
 
             --update the position of the text
             local function UPDATER()
@@ -383,11 +393,10 @@ local sections = {
                     if drop and drop:FindFirstChild("HumanoidRootPart")then
                         --get drop on screen with 3d position
                         local dropvector, onscreen = camera:WorldToViewportPoint(drop.HumanoidRootPart.Position+Vector3.new(0,4.5,0))
-                        local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - drop:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                        local dist = (character:WaitForChild("HumanoidRootPart").Position - drop:FindFirstChild("HumanoidRootPart").Position).Magnitude
                         if library.flags["Mob ESP"] then
                             if onscreen then
                                 if dist<=library.flags["ESP Range"] then
-                                    DropLine.Color = DropText.Color
                                     DropText.Position = Vector2.new(dropvector.X, dropvector.Y)
                                     DropText.Text = "["..drop.Name:gsub('[%p%d]','').."]".."\n".."["..math.round(drop.Humanoid.Health).." / "..math.round(drop.Humanoid.MaxHealth).."]".."\n"..math.round(dist)
                                     DropText.Visible = true
@@ -418,8 +427,9 @@ local sections = {
         end
 
         game:GetService("Workspace").Live.DescendantAdded:Connect(function(child)
-            if child.Name == "HumanoidRootPart" and child.Parent:FindFirstChild("SpawnCF") then
+            if child.Name == "HumanoidRootPart" and child.Parent:FindFirstChild("SpawnCF") and child.Parent:FindFirstChild("Target")  then
                 DrawMob(child.Parent)
+                wait(9e9)
             end
         end)
 
@@ -454,7 +464,7 @@ local sections = {
             if chest and chest.Transparency == 0 then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(chest.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - chest.Position).Magnitude
+                local dist = (character:WaitForChild("HumanoidRootPart").Position - chest.Position).Magnitude
                 if library.flags["Chest Esp"] then
                     if onscreen then
                         if dist <= library.flags["Chest Range"] then
@@ -526,7 +536,7 @@ local sections = {
             if Area then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(Area.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - Area.Position).Magnitude
+                local dist = (character:WaitForChild("HumanoidRootPart").Position - Area.Position).Magnitude
                 if library.flags["Area Esp"] then
                     if onscreen then
                             DropLine.Color = DropText.Color
@@ -594,7 +604,7 @@ local sections = {
             if bag and bag.Transparency == 0 and  game:GetService("Workspace").Thrown:FindFirstChild(bag) then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(bag.Position+Vector3.new(0,.45,0))
-                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - bag.Position).Magnitude
+                local dist = (character:WaitForChild("HumanoidRootPart").Position - bag.Position).Magnitude
                 if library.flags["Bag Esp"] then
                     if onscreen then
                         if dist<= library.flags["Bag Range"] then
@@ -666,7 +676,7 @@ local sections = {
             if plr and plr:FindFirstChild("HumanoidRootPart")  and plr:FindFirstChild("HumanoidRootPart").CFrame and plr:FindFirstChild("HumanoidRootPart").Position and game.Players:FindFirstChild(plr.Name) then
                 --get drop on screen with 3d position
                 local dropvector, onscreen = camera:WorldToViewportPoint(plr:FindFirstChild("HumanoidRootPart").Position+Vector3.new(0,3.45,0))
-                local dist = (player.Character:WaitForChild("HumanoidRootPart").Position - plr:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                local dist = (character:WaitForChild("HumanoidRootPart").Position - plr:FindFirstChild("HumanoidRootPart").Position).Magnitude
 
                 if library.flags["Player Esp"] and plr and plr:FindFirstChild("HumanoidRootPart") and plr.Name ~=game.Players.LocalPlayer.Name then
                     if onscreen then
